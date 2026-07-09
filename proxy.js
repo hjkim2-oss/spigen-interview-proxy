@@ -49,9 +49,17 @@ export default async function handler(request) {
     });
   }
 
+  // 클라이언트가 보낸 max_tokens를 그대로 반영합니다.
+  // 지정하지 않았거나 잘못된 값이면 4096을 기본값으로 쓰고,
+  // 혹시 모를 과도한 값(비용 폭주)을 막기 위해 최대 8192로 제한합니다.
+  const requestedMaxTokens = Number(body.max_tokens);
+  const maxTokens = Number.isFinite(requestedMaxTokens) && requestedMaxTokens > 0
+    ? Math.min(requestedMaxTokens, 8192)
+    : 4096;
+
   const payload = {
     model: "claude-sonnet-5",
-    max_tokens: 1000,
+    max_tokens: maxTokens,
     system: body.system || "",
     messages: Array.isArray(body.messages) ? body.messages : [],
   };
