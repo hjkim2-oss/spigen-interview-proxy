@@ -13,6 +13,8 @@ function corsHeaders(allowedOrigin) {
     "Access-Control-Allow-Origin": allowedOrigin || "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
+    // 커스텀 응답 헤더는 기본적으로 브라우저 JS에서 안 읽힙니다. 아래로 명시적으로 노출시켜야 합니다.
+    "Access-Control-Expose-Headers": "X-Proxy-Version, X-Proxy-Applied-Max-Tokens, X-Proxy-Requested-Max-Tokens",
   };
 }
 
@@ -79,6 +81,10 @@ export default async function handler(request) {
     status: anthropicRes.status,
     headers: {
       "Content-Type": "application/json",
+      // 디버그용 헤더: 이 값이 응답에 안 보이면 Vercel이 옛날 코드를 그대로 서빙하고 있다는 뜻입니다.
+      "X-Proxy-Version": "2-forward-max-tokens",
+      "X-Proxy-Applied-Max-Tokens": String(maxTokens),
+      "X-Proxy-Requested-Max-Tokens": String(body.max_tokens),
       ...corsHeaders(allowedOrigin),
     },
   });
